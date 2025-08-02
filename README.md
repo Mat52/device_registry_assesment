@@ -1,21 +1,22 @@
 # Device Registry
 
-A simple Ruby on Rails application for registering devices to users, returning devices, and validating assignment rules.  
-This project is part of a recruitment task.
+A lightweight **Ruby on Rails** service for managing physical device assignments to users.  
+Users can register devices to themselves, return them, and the system ensures strict assignment rules with a full audit trail.  
+This project was implemented as part of a recruitment task.
 
 ---
 
-## Requirements
+## 📋 Requirements
 
-- Ruby 3.x
-- Rails 7.x
-- Bundler
-- SQLite3 (default) or PostgreSQL
+- Ruby 3.x  
+- Rails 7.x  
+- Bundler  
+- SQLite3 (default) or PostgreSQL  
 - RSpec for testing
 
 ---
 
-## Setup
+## ⚡ Setup & Run
 
 1. **Clone the repository**
    ```bash
@@ -39,49 +40,77 @@ This project is part of a recruitment task.
    rspec
    ```
 
----
-
-## Project Structure
-
-- `app/models` – User, Device, and ApiKey models
-- `app/services` – Service objects handling device assignment and returning:
-  - `AssignDeviceToUser`
-  - `ReturnDeviceFromUser`
-- `spec/` – RSpec tests for models and services
+5. **Start the server**
+   ```bash
+   rails server
+   ```
+   Then open `http://localhost:3000`
 
 ---
 
-## Usage
+## 📡 API Usage
 
-To run the application locally:
+The app exposes a minimal API for assigning and returning devices:
 
+### Assign a Device
 ```bash
-rails server
+curl -X POST http://localhost:3000/api/assign   -H "Content-Type: application/json"   -d '{"device": {"serial_number": "ABC123"}}'
 ```
 
-Then open `http://localhost:3000` in your browser.
+### Return a Device
+```bash
+curl -X POST http://localhost:3000/api/unassign   -H "Content-Type: application/json"   -d '{"device": {"serial_number": "ABC123"}}'
+```
 
 ---
 
-## Error Handling
+## 🔒 Assignment Rules
 
-The application includes custom error classes to handle edge cases:
-
-- `AssigningError::AlreadyUsedBySameUser` – device was already used and returned by the same user
-- `AssigningError::AlreadyUsedOnOtherUser` – device is already assigned to another user
-- `ReturningError::Unauthorized` – user attempting to return a device they do not own
-- `UnassigningError::AlreadyUnassigned` – device is already unassigned
-
----
-
-## Notes
-
-- Devices can be assigned to users.
-- Devices can be returned, and the system tracks the assignments.
-- Tests cover main business logic for assigning and returning devices.
+- Users can **only assign devices to themselves**.  
+- A device must be **unassigned** to be assigned.  
+- Devices **returned by the same user** cannot be re-assigned to that user.  
+- Only the **owner** of a device can return it.  
+- Every assignment and return is logged in `DeviceAssignment`.
 
 ---
 
-## Author
+## 📂 Project Structure
+
+- `app/models` – User, Device, and ApiKey models  
+- `app/services` – Business logic for device lifecycle:
+  - `AssignDeviceToUser`
+  - `ReturnDeviceFromUser`
+- `spec/` – RSpec test suite for models and services
+
+---
+
+## ⚠️ Error Handling
+
+Custom errors are used for better domain-driven error reporting:
+
+- `AssigningError::AlreadyUsedBySameUser` – device already used & returned by same user  
+- `AssigningError::AlreadyUsedOnOtherUser` – device currently assigned to another user  
+- `ReturningError::Unauthorized` – returning a device not owned by the user  
+- `UnassigningError::AlreadyUnassigned` – device already unassigned
+
+---
+
+## 🧪 Testing
+
+The project is fully covered with RSpec tests for:
+
+- Service objects (`AssignDeviceToUser`, `ReturnDeviceFromUser`)  
+- Edge cases like double assignment or unauthorized returns  
+- Controller API responses
+
+Run tests with:
+
+```bash
+rspec
+```
+
+---
+
+## 👤 Author
 
 Recruitment task solution by **Mateusz Łopatkiewicz**.
