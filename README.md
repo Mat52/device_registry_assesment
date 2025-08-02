@@ -121,12 +121,6 @@ Run tests with:
 rspec
 ```
 
-To check coverage:
-
-```bash
-COVERAGE=true rspec
-open coverage/index.html
-```
 
 ---
 
