@@ -8,54 +8,31 @@ class AssignDeviceToUser
   end
 
   def call
-    puts "=== AssignDeviceToUser START ==="
-    puts "Requesting user: #{@requesting_user.id}"
-    puts "Serial number: #{@serial_number}"
-    puts "New device owner: #{@new_device_owner_id}"
-
-    # 0. Sprawdzenie uprawnień
-    raise RegistrationError::Unauthorized unless @requesting_user.id == @new_device_owner_id
-
-    device = Device.find_by(serial_number: @serial_number)&.reload
-    puts "Device found? #{device.present?}"
-
-    # 1. Brak urządzenia -> tworzymy nowe
+    new_user = User.find(@new_device_owner_id)
+    raise RegistrationError::Unauthorized unless @requesting_user.id == new_user.id
+    device = Device.uncached { Device.find_by(serial_number: @serial_number) }
+    if device
+      already_used = device.device_assignments
+                           .where(user_id: new_user.id)
+                           .where.not(returned_at: nil)
+                           .exists?
+      raise AssigningError::AlreadyUsedOnUser if already_used
+    end
     if device.nil?
-      puts "No device found, creating new..."
-      device = @requesting_user.devices.create!(serial_number: @serial_number)
-      device.device_assignments.create!(user: @requesting_user)
-      puts "Device created and assigned."
-      puts "=== AssignDeviceToUser END (success - new device) ==="
+      device = new_user.devices.create!(serial_number: @serial_number)
+      device.device_assignments.create!(user: new_user, returned_at: nil)
       return :success
     end
-
-    puts "Device current user_id: #{device.user_id.inspect}"
-    puts "Previous assignments: #{device.device_assignments.pluck(:user_id).inspect}"
-
-    # 2. Urządzenie aktualnie przypisane do innego użytkownika
-    if device.user_id.present? && device.user_id != @requesting_user.id
-      puts "Device currently used by other user -> raising AlreadyUsedOnOtherUser"
+    active_assignment = device.device_assignments.find_by(returned_at: nil)
+    if active_assignment && active_assignment.user_id != new_user.id
       raise AssigningError::AlreadyUsedOnOtherUser
     end
 
-    # 3. Urządzenie aktualnie przypisane do tego samego usera
-    if device.user_id == @requesting_user.id
-      puts "Device already used by same user -> raising AlreadyUsedBySameUser"
+    if active_assignment && active_assignment.user_id == new_user.id
       raise AssigningError::AlreadyUsedBySameUser
     end
-
-    # 4. Urządzenie jest wolne, sprawdzamy historię w DeviceAssignments
-    if device.user_id.nil? && device.device_assignments.reload.where(user_id: @requesting_user.id).exists?
-        puts "Device was already assigned to this user in the past -> raising AlreadyUsedOnUser"
-        raise AssigningError::AlreadyUsedOnUser
-    end
-
-    # 5. Urządzenie zwrócone i nigdy nieużywane przez tego usera -> przypisujemy
-    puts "Assigning device to user #{@requesting_user.id}..."
-    device.update!(user_id: @requesting_user.id)
-    device.device_assignments.create!(user: @requesting_user)
-    puts "Assignment successful."
-    puts "=== AssignDeviceToUser END (success - reused device) ==="
+    device.update!(user_id: new_user.id)
+    device.device_assignments.create!(user: new_user, returned_at: nil)
     :success
   end
 end
