@@ -12,8 +12,8 @@ class DevicesController < ApplicationController
       head :ok
     rescue RegistrationError::Unauthorized
       render json: { error: 'Unauthorized' }, status: :unprocessable_entity
-    rescue AssigningError::Unauthorized
-      render json: { error: 'Unauthorized' }, status: :unprocessable_entity
+    rescue AssigningError => e
+      render json: { error: e.class.name.demodulize }, status: :unprocessable_entity
     end
   end
 

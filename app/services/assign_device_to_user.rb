@@ -14,7 +14,7 @@ class AssignDeviceToUser
     puts @serial_number
     puts @new_device_owner_id
 
-    
+
     if device.nil?
       puts "Creating Device"
       device = @requesting_user.devices.create!(serial_number: @serial_number)
@@ -28,6 +28,5 @@ class AssignDeviceToUser
           raise AssigningError::AlreadyUsedOnOtherUser
        end
     end
-    puts "done"
   end
 end
