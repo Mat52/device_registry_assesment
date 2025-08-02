@@ -9,5 +9,9 @@ class AssignDeviceToUser
 
   def call
     raise RegistrationError::Unauthorized unless @requesting_user.id == @new_device_owner_id 
+
+    device = Device.find_by(serial_number: @serial_number)
+    device.reload if device
+    puts "DEBUG: Found device? #{!!device}, user_id: #{device&.user_id}, previous_user_id: #{device&.previous_user_id}"
   end
 end

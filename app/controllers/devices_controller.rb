@@ -13,6 +13,7 @@ class DevicesController < ApplicationController
     rescue RegistrationError::Unauthorized
       render json: { error: 'Unauthorized' }, status: :unprocessable_entity
     end
+
   end
 
   def unassign
