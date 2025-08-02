@@ -2,10 +2,19 @@
 
 require 'rails_helper'
 
-RSpec.describe AssignDeviceToUser, transactional: false do
-  let!(:user) { create(:user) }
-  let(:serial_number) { SecureRandom.hex(4) }
+  RSpec.describe AssignDeviceToUser do
+  subject(:assign_device) do
+    described_class.new(
+      requesting_user: user,
+      serial_number: serial_number,
+      new_device_owner_id: new_device_owner_id
+    ).call
+  end
 
+  let(:user) { create(:user) }
+  let(:serial_number) { '123456' }
+
+  #added to successfuly avoid cached inapropriate success
   def assign_device
     AssignDeviceToUser.new(
       requesting_user: user,
@@ -31,12 +40,9 @@ RSpec.describe AssignDeviceToUser, transactional: false do
     end
 
     context 'when a user tries to register a device that was already assigned to and returned by the same user' do
-      before(:all) do
-        DatabaseCleaner.strategy = :truncation
-      end
 
-      before(:each) do
-        DatabaseCleaner.start
+
+      before do
         assign_device
         ReturnDeviceFromUser.new(
           user: user,
@@ -45,18 +51,8 @@ RSpec.describe AssignDeviceToUser, transactional: false do
         ).call
       end
 
-      after(:each) do
-        DatabaseCleaner.clean
-      end
-
       it 'does not allow to register' do
-        devices = Device.all.map { |d| [d.id, d.serial_number, d.user_id] }
-        assignments = DeviceAssignment.all.map do |a|
-          [a.id, a.device_id, a.user_id, a.returned_at, a.created_at, a.updated_at]
-        end
-        expect do
-          result = assign_device
-        end.to raise_error(AssigningError::AlreadyUsedOnUser)
+        expect { assign_device }.to raise_error(AssigningError::AlreadyUsedOnUser)
       end
     end
 
