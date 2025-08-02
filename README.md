@@ -55,18 +55,12 @@ The app exposes minimal endpoints for **assigning** and **returning** devices.
 
 ### Assign a Device
 ```bash
-curl -X POST http://localhost:3000/devices/assign \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer <token>" \
-  -d '{"device": {"serial_number": "ABC123"}, "new_owner_id": 1}'
+curl -X POST http://localhost:3000/api/assign   -H "Content-Type: application/json"   -d '{"device": {"serial_number": "ABC123"}}'
 ```
 
 ### Return a Device
 ```bash
-curl -X POST http://localhost:3000/devices/unassign \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer <token>" \
-  -d '{"device": {"serial_number": "ABC123"}, "from_user": 1}'
+curl -X POST http://localhost:3000/api/unassign   -H "Content-Type: application/json"   -d '{"device": {"serial_number": "ABC123"}}'
 ```
 
 ---
