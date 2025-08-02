@@ -7,11 +7,11 @@ RSpec.describe ReturnDeviceFromUser do
   let(:serial_number) { '123456' }
   let(:from_user) { user.id }
 
-  def return_device
+  def return_device(current_user: user, from_user_id: from_user)
     described_class.new(
-      user: user,
+      user: current_user,
       serial_number: serial_number,
-      from_user: from_user
+      from_user: from_user_id
     ).call
   end
 
@@ -56,13 +56,7 @@ RSpec.describe ReturnDeviceFromUser do
     let(:other_user) { create(:user) }
 
     it 'raises an Unauthorized error' do
-      expect do
-        described_class.new(
-          user: other_user,
-          serial_number: serial_number,
-          from_user: from_user
-        ).call
-      end.to raise_error(AssigningError::Unauthorized)
+      expect { return_device(current_user: other_user) }.to raise_error(AssigningError::Unauthorized)
     end
   end
 end
