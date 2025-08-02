@@ -16,8 +16,8 @@ RSpec.describe DevicesController, type: :controller do
     context 'when the user is authenticated' do
       context 'when user assigns a device to another user' do
         let(:new_owner_id) { create(:user).id }
-
         it 'returns an unauthorized response' do
+          assign
           expect(response.code).to eq(422)
           expect(JSON.parse(response.body)).to eq({ 'error' => 'Unauthorized' })
         end
