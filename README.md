@@ -20,7 +20,7 @@ This project was implemented as part of a recruitment task.
 
 1. **Clone the repository**
    ```bash
-   git clone <your_repo_url>
+   git clone https://github.com/Mat52/device_registry_assesment.git
    cd device_registry
    ```
 
