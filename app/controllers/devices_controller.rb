@@ -12,13 +12,10 @@ class DevicesController < ApplicationController
         serial_number: serial_number,
         new_device_owner_id: new_device_owner_id
       ).call
-      Rails.logger.info "AssignDeviceToUser result: #{result.inspect}"
       head :ok
     rescue RegistrationError::Unauthorized
-      Rails.logger.info "ERROR: RegistrationError::Unauthorized"
       render json: { error: 'Unauthorized' }, status: :unprocessable_entity
     rescue AssigningError => e
-      Rails.logger.info "ERROR: #{e.class} - #{e.message}"
       render json: { error: e.class.name.demodulize }, status: :unprocessable_entity
     end
   end
