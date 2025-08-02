@@ -29,6 +29,7 @@ begin
 rescue ActiveRecord::PendingMigrationError => e
   abort e.to_s.strip
 end
+
 RSpec.configure do |config|
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
   config.fixture_paths = [
@@ -62,4 +63,35 @@ RSpec.configure do |config|
   config.filter_rails_from_backtrace!
   # arbitrary gems may also be filtered via:
   # config.filter_gems_from_backtrace("gem name")
+end
+
+# -----------------------
+# 🔹 DatabaseCleaner setup
+# -----------------------
+require 'database_cleaner/active_record'
+
+RSpec.configure do |config|
+  # Używamy transakcji dla szybkości
+  config.before(:suite) do
+    DatabaseCleaner.strategy = :transaction
+    DatabaseCleaner.clean_with(:truncation)
+  end
+
+  config.before(:each) do
+    DatabaseCleaner.start
+  end
+
+  config.after(:each) do
+    DatabaseCleaner.clean
+  end
+
+  # 🔹 Specjalny tryb dla testów wymagających truncation
+  config.before(:each, clean_with_truncation: true) do
+    DatabaseCleaner.strategy = :truncation
+    DatabaseCleaner.clean
+  end
+
+  config.after(:each, clean_with_truncation: true) do
+    DatabaseCleaner.strategy = :transaction
+  end
 end
