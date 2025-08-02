@@ -21,7 +21,7 @@ This project was implemented as part of a recruitment task.
 1. **Clone the repository**
    ```bash
    git clone https://github.com/Mat52/device_registry_assesment.git
-   cd device_registry
+   cd device_registry_assesment
    ```
 
 2. **Install dependencies**
