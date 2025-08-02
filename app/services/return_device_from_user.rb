@@ -9,11 +9,11 @@ class ReturnDeviceFromUser
 
   def call
     unless @user.id == @from_user.to_i
-      raise ReturningError::Unauthorized
+      raise AssigningError::Unauthorized
     end
     device = Device.find_by(serial_number: @serial_number, user_id: @from_user)
     if device.nil?
-      raise UnassigningError::AlreadyUnassigned
+      raise AssigningError::AlreadyUnassigned
     end
     device.update!(user_id: nil, previous_user_id: @user.id)
   end
