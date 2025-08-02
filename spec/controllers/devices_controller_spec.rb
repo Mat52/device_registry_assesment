@@ -6,8 +6,8 @@ RSpec.describe DevicesController, type: :controller do
   let(:api_key) { create(:api_key) }
   let(:user) { api_key.bearer }
 
-  
 
+  
   describe 'POST #assign' do
     subject(:assign) do
       post :assign,
@@ -26,7 +26,6 @@ RSpec.describe DevicesController, type: :controller do
 
       context 'when user assigns a device to self' do
         let(:new_owner_id) { user.id }
-
         it 'returns a success response' do
           assign
           expect(response).to be_successful
