@@ -3,16 +3,22 @@
 class DevicesController < ApplicationController
   before_action :authenticate_user!, only: %i[assign unassign]
   def assign
+    customized_params = params.permit(:new_owner_id, device: [:serial_number])
+    serial_number = customized_params[:device][:serial_number]
+    new_device_owner_id = customized_params[:new_owner_id].to_i
     begin
       AssignDeviceToUser.new(
         requesting_user: @current_user,
-        serial_number: params[:serial_number],
-        new_device_owner_id: params[:new_device_owner_id]
+        serial_number: serial_number,
+        new_device_owner_id: new_device_owner_id
       ).call
+      Rails.logger.info "AssignDeviceToUser result: #{result.inspect}"
       head :ok
     rescue RegistrationError::Unauthorized
+      Rails.logger.info "ERROR: RegistrationError::Unauthorized"
       render json: { error: 'Unauthorized' }, status: :unprocessable_entity
     rescue AssigningError => e
+      Rails.logger.info "ERROR: #{e.class} - #{e.message}"
       render json: { error: e.class.name.demodulize }, status: :unprocessable_entity
     end
   end

@@ -8,7 +8,7 @@ class AssignDeviceToUser
   end
 
   def call
-    raise RegistrationError::Unauthorized unless @requesting_user.id == @new_device_owner_id 
+    raise RegistrationError::Unauthorized unless @requesting_user.id == @new_device_owner_id
     device = Device.find_by(serial_number: @serial_number)
     puts @requesting_user.id
     puts @serial_number
@@ -16,15 +16,12 @@ class AssignDeviceToUser
 
 
     if device.nil?
-      puts "Creating Device"
       device = @requesting_user.devices.create!(serial_number: @serial_number)
       return :success
     else
        if device.user_id == @requesting_user.id
-          puts "AssigningError::AlreadyUsedBySameUser"
           raise AssigningError::AlreadyUsedBySameUser
        elsif device.user_id != @requesting_user.id
-          puts "AssigningError::AlreadyUsedOnOtherUser"
           raise AssigningError::AlreadyUsedOnOtherUser
        end
     end
